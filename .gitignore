@@ -1,0 +1,4 @@
+bazel-*
+ip/
+src/tmp/
+.cache/
