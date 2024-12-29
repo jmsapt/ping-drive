@@ -1,4 +1,5 @@
 bazel-*
 ip/
 src/tmp/
+mnt/
 .cache/

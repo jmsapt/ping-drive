@@ -110,7 +110,9 @@ class Pinger {
         // start sniffer (sniffer does the juggling)
         Tins::SnifferConfiguration config;
         config.set_filter("icmp[0] == 0");
-        config.set_immediate_mode(true);
+        config.set_buffer_size(50 * 1024 * 1024);
+        config.set_timeout(5);
+        // config.set_immediate_mode(true);
         Tins::Sniffer sniffer("any", config);
 
         std::vector<ReadRequest> requests;
@@ -205,6 +207,7 @@ class Pinger {
             std::cout << time << " Sent to IP: " << dst.to_string() << '(' << id
                       << ") " << '(' << block_num << ')' << std::endl;
             auto ip = Tins::IP(dst, LocalIp);
+
             ip.ttl(100);
             ip /= icmp;
 
@@ -213,6 +216,8 @@ class Pinger {
 
         if (!reuse_id)
             blocks[block_num] = id;
+
+        std::this_thread::sleep_for(std::chrono::microseconds{100});
     }
 
     std::optional<Tins::ICMP> handle_packet(const Tins::ICMP &packet);

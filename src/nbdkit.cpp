@@ -1,5 +1,5 @@
+#include <chrono>
 #include <cstring>
-#include <future>
 #include <ranges>
 #include <semaphore>
 
@@ -10,7 +10,7 @@
 
 #define THREAD_MODEL NBDKIT_THREAD_MODEL_SERIALIZE_ALL_REQUESTS
 
-using PingerT = Pinger<1024, 1024, 2>;
+using PingerT = Pinger<1024, 64, 4>;
 
 PingerT *get_pinger(void *handle) { return static_cast<PingerT *>(handle); };
 
@@ -92,6 +92,8 @@ int my_pwrite(void *handle, const void *buf, uint32_t count, uint64_t offset) {
             static_cast<const std::uint8_t *>(buf) + i * pinger->blocksize(),
             pinger->blocksize());
 
+        // don't question it
+        std::this_thread::sleep_for(std::chrono::microseconds{300'000});
         pinger->write(offset + i * pinger->blocksize(), data, cb);
     };
 

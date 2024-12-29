@@ -43,7 +43,10 @@ cc_binary(
         ":pinger",
     ],
     copts = [
-      "-std=c++20 -fPIC -shared",
+      "-std=c++20",
+      "-fPIC",
+      "-shared",
+      "-Ofast",
     ],
     visibility = [ "//visibility:public" ],
     linkshared=True,
