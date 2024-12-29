@@ -1,6 +1,6 @@
 #!/bin/bash
 
-STEP=2
+STEP=1
 
 BINARY=/home/james/ping-fs/bazel-bin/src/ping
 DIR=/home/james/ping-fs/ip

@@ -7,6 +7,20 @@ http_archive(
 )
 
 http_archive(
+    name = "nbdcpp",
+    urls = ["https://github.com/dsroche/nbdcpp/archive/refs/heads/master.zip"],
+    strip_prefix = "nbdcpp-master/",
+    build_file_content = 
+"""
+cc_library(
+    name = "nbdcpp",
+    hdrs = glob(["*.h"]),
+    visibility = ["//visibility:public"],
+)
+"""
+)
+
+http_archive(
     name = "libtins",
     urls = ["https://github.com/mfontanini/libtins/archive/refs/tags/v4.5.tar.gz"],
     strip_prefix = "libtins-4.5",

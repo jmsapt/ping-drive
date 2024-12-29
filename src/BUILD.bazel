@@ -22,20 +22,35 @@ cc_binary(
     ],
 )
 
+# cc_binary(
+#     name = "ping-drive",
+#     srcs = ["nbd.cpp"],
+#     linkopts = [ "-ltins", "-lnbd" ],
+#     deps = [
+#         ":pinger",
+#         "@nbdcpp//:nbdcpp",
+#     ],
+#     copts = [
+#       "-std=c++20",
+#     ],
+# )
+
 cc_binary(
-    name = "ping-drive",
-    srcs = ["nbd.cpp"],
+    name = "ping-nbd",
+    srcs = ["nbdkit.cpp"],
     linkopts = [ "-ltins", "-lnbd" ],
     deps = [
+        ":pinger",
     ],
     copts = [
-      "-std=c++20",
+      "-std=c++20 -fPIC -shared",
     ],
+    visibility = [ "//visibility:public" ],
+    linkshared=True,
 )
 
 cc_library(
     name = "pinger",
-    srcs = [ "Pinger.cpp" ],
     hdrs = [ "Pinger.hpp" ],
     linkopts = ["-lnbd", "-ltins"],
     deps = [ 

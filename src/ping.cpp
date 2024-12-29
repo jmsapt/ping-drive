@@ -18,7 +18,7 @@
 using namespace std;
 std::atomic<bool> open{true};
 
-constexpr int threshold{200};
+constexpr int threshold{0};
 
 // every `factor` pings, sleep for `throttle`
 constexpr std::chrono::microseconds throttle{1'000};
@@ -72,7 +72,7 @@ void listener(const std::string &path) {
         auto then = get_time(payload);
 
         auto ms = std::chrono::duration_cast<chrono::milliseconds>(now - then);
-        if (ms > std::chrono::milliseconds{threshold}) {
+        if (ms >= std::chrono::milliseconds{threshold}) {
             cout << ip.src_addr() << "\t=> " << ms << std::endl;
             output << ip.src_addr() << " " << ms << std::endl;
         }

@@ -9,21 +9,42 @@
 #include "Pinger.hpp"
 #include "lib/Channel.hpp"
 
-int main() {
+int main(int argc, char* argv[]) {
+    if (argc != 2) {
+        std::cerr << "Error, usage: <IP file>" << std::endl;
+        return 1;
+    }
+    std::string ip_file(argv[1]);
+
+
     nbd_handle *nbd = nbd_create();
+    std::binary_semaphore wait{false};
 
     if (!nbd) {
         std::cerr << "Failed to create nbd handle\n";
         return 1;
     }
 
-    std::cout << "eke?" << std::endl;
-    auto [rx, tx] = create_channel<Pinger::ReadRequest>();
+    std::cout << "Victim file " << ip_file << std::endl;
+    auto [rx, tx] = create_channel<ReadRequest>();
 
-    auto pinger = Pinger{"TODO", std::move(tx), std::move(rx)};
+    auto pinger = Pinger{ip_file, std::move(tx), std::move(rx)};
 
     // auto _ = std::thread([&] { pinger.run(); });
     std::string msg;
+    std::cout << "Fresh block read (should just return zeros, without blocking)"
+              << std::endl;
+
+    auto read_cb = [&](int x, std::span<const std::uint8_t> data) {
+        std::string result{data.begin(), data.end()};
+        std::cout << "Error " << x << "Read returned with length "
+                  << data.size() << "\nContents: " << result << std::endl;
+        wait.release();
+    };
+
+    pinger.read(0, pinger.blocksize(), read_cb);
+    std::cout << "blocking..." << std::endl;
+    wait.acquire();
 
     // blocks for a message
     std::cin >> msg;
@@ -38,19 +59,18 @@ int main() {
 
     std::span<std::uint8_t> payload{data.data(), pinger.blocksize()};
     std::cout << "Message length " << payload.size() << '\n';
-    pinger.write(0, payload, cb);
+    pinger.write(13 * pinger.blocksize(), payload, cb);
 
     // sleep 3 seconds, then echo out the message from the network
     sleep(3);
-    std::binary_semaphore wait{false};
-    auto read_cb = [&](int x, std::span<const std::uint8_t> data) {
-        std::string result{data.begin(), data.end()};
-        std::cout << "Read returned with length " << data.size()
-                  << "\nContents: " << result << std::endl;
-        wait.release();
-    };
+    // auto read_cb = [&](int x, std::span<const std::uint8_t> data) {
+    //     std::string result{data.begin(), data.end()};
+    //     std::cout << "Read returned with length " << data.size()
+    //               << "\nContents: " << result << std::endl;
+    //     wait.release();
+    // };
 
-    pinger.read(0, pinger.blocksize(), read_cb);
+    pinger.read(13 * pinger.blocksize(), pinger.blocksize(), read_cb);
     wait.acquire();
 
     // Close connection
